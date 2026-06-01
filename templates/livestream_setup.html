@@ -38,9 +38,18 @@
   </div>
   <div class="mb-5">
     <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Target GMV per stream <span class="normal-case text-gray-300">(optional)</span></div>
-    <input type="text" name="target_gmv" placeholder="e.g. 50000000"
-      class="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-gray-400">
-    <div class="text-xs text-gray-300 mt-1">IDR, no separators</div>
+    <div class="flex gap-2">
+      <div class="flex rounded-lg border border-gray-200 overflow-hidden flex-shrink-0">
+        <button type="button" id="btn-idr" onclick="setCurrency('IDR')"
+          class="text-xs px-3 py-2 bg-gray-900 text-white font-medium">IDR</button>
+        <button type="button" id="btn-usd" onclick="setCurrency('USD')"
+          class="text-xs px-3 py-2 text-gray-400 hover:bg-gray-50">USD</button>
+      </div>
+      <input type="text" name="target_gmv" placeholder="e.g. 50000000"
+        class="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-gray-400">
+      <input type="hidden" name="currency" id="currency_val" value="IDR">
+    </div>
+    <div class="text-xs text-gray-300 mt-1">No separators or symbols</div>
   </div>
   <div class="mb-6">
     <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Stream type</div>
@@ -59,6 +68,11 @@
   <button type="submit" class="w-full bg-gray-900 text-white text-sm py-2.5 rounded-lg hover:bg-gray-800">Continue →</button>
 </form>
 <script>
+function setCurrency(c) {
+  document.getElementById('currency_val').value = c;
+  document.getElementById('btn-idr').className = 'text-xs px-3 py-2 ' + (c==='IDR' ? 'bg-gray-900 text-white font-medium' : 'text-gray-400 hover:bg-gray-50');
+  document.getElementById('btn-usd').className = 'text-xs px-3 py-2 ' + (c==='USD' ? 'bg-gray-900 text-white font-medium' : 'text-gray-400 hover:bg-gray-50');
+}
 function selectPill(btn) {
   const field = btn.dataset.field;
   btn.closest('.flex').querySelectorAll('.pill').forEach(b => {

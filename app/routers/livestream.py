@@ -44,6 +44,7 @@ async def input_page(request: Request):
     return templates.TemplateResponse(request, "livestream_input.html", {
         "entity_name": request.query_params.get("entity_name", ""),
         "target_gmv":  request.query_params.get("target_gmv", ""),
+        "currency":    request.query_params.get("currency", "IDR"),
         "platform":    request.query_params.get("platform", "tiktok"),
         "stream_type": request.query_params.get("stream_type", "bau"),
     })
