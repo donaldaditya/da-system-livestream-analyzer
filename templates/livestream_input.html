@@ -7,8 +7,9 @@
   <div class="text-xs py-2 px-4 border-b-2 border-gray-900 font-medium">2 — Input</div>
   <div class="text-xs py-2 px-4 text-gray-400">3 — Analysis</div>
 </div>
+
 <div class="flex gap-2 mb-5">
-  {% for m, label in [("file","Upload file"),("screenshot","Screenshot"),("manual","Manual entry")] %}
+  {% for m, label in [("file","Upload file"),("manual","Manual entry")] %}
   <button onclick="setMode('{{ m }}')" id="btn-{{ m }}"
     class="text-xs px-3 py-1.5 rounded-full border transition-colors
     {% if m == 'file' %}bg-gray-900 text-white border-gray-900{% else %}border-gray-200 text-gray-500{% endif %}">
@@ -16,17 +17,18 @@
   </button>
   {% endfor %}
 </div>
+
 <form action="/livestream-analyzer/analyze" method="post" enctype="multipart/form-data">
   <input type="hidden" name="entity_name" value="{{ entity_name }}">
   <input type="hidden" name="target_gmv" value="{{ target_gmv }}">
   <input type="hidden" name="currency" value="{{ currency }}">
-  <input type="hidden" name="platform" value="{{ platform }}">
+  <input type="hidden" name="platform" id="platform_field" value="{{ platform }}">
   <input type="hidden" name="stream_type" value="{{ stream_type }}">
   <input type="hidden" name="input_mode" id="input_mode" value="file">
 
   <!-- FILE UPLOAD -->
   <div id="c-file">
-    <label class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-300" id="file-label">
+    <label class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-300">
       <div class="text-gray-300 text-2xl mb-2">↑</div>
       <div class="text-sm font-medium text-gray-700 mb-1" id="file-label-text">Drop XLSX, XLS or CSV export</div>
       <div class="text-xs text-gray-400">TikTok MCN export · Shopee Seller Centre</div>
@@ -34,131 +36,118 @@
     </label>
   </div>
 
-  <!-- SCREENSHOT MODE: image preview + structured form -->
-  <div id="c-screenshot" class="hidden">
-    <div class="grid grid-cols-2 gap-4 mb-4">
-      <!-- Left: image upload for reference -->
-      <div>
-        <label class="block border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-blue-300 mb-2">
-          <div class="text-xs text-gray-400 mb-1">Upload screenshot <span class="text-gray-300">(optional reference)</span></div>
-          <input type="file" name="screenshot_ref" accept="image/*" class="hidden" onchange="previewScreenshot(this)">
-          <div id="ss-preview-wrap" class="hidden mt-2">
-            <img id="ss-thumb" src="" class="w-full rounded-lg max-h-40 object-contain">
-          </div>
-          <div id="ss-placeholder" class="text-gray-300 text-lg">◻</div>
-        </label>
-        <div class="text-xs text-gray-300 text-center">Read metrics from this, type below</div>
-      </div>
-      <!-- Right: platform-specific fields -->
-      <div id="ss-fields-tiktok" class="space-y-2">
-        <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">TikTok Dashboard metrics</div>
-        {% for f,l,p in [
-          ("ss_gmv","Attributed GMV (Rp)","3166320"),
-          ("ss_items_sold","Items sold","54"),
-          ("ss_views","Views / Impressions","66530"),
-          ("ss_peak_viewers","Peak viewers","39"),
-          ("ss_duration","Duration (min)","97"),
-          ("ss_show_gpm","Show GPM (Rp)","6670"),
-          ("ss_avg_view","Avg viewing duration (s)","12"),
-          ("ss_tap_through","Tap-through rate (%)","2.64"),
-          ("ss_ctor","CTOR (%)","0.33"),
-          ("ss_follow_rate","Follow rate (%)","0.13"),
-          ("ss_new_followers","New followers","142"),
-          ("ss_comments","Comments",""),
-          ("ss_likes","Likes",""),
-          ("ss_shares","Shares","")
-        ] %}
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-gray-500 w-40 flex-shrink-0">{{ l }}</label>
-          <input type="text" name="{{ f }}" placeholder="{{ p }}"
-            class="flex-1 text-xs px-2 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400">
-        </div>
-        {% endfor %}
-      </div>
-      <div id="ss-fields-shopee" class="space-y-2 hidden">
-        <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Shopee Dashboard metrics</div>
-        {% for f,l,p in [
-          ("ss_gmv","Penjualan / GMV (Rp)","5000000"),
-          ("ss_orders","Pesanan / Orders","45"),
-          ("ss_items_sold","Produk Terjual","30"),
-          ("ss_viewers_total","Total Penonton","800"),
-          ("ss_viewers_active","Penonton Aktif","120"),
-          ("ss_duration","Durasi (min)","120"),
-          ("ss_avg_view","Avg view duration (s)","55"),
-          ("ss_add_to_cart","Tambah ke Keranjang","60"),
-          ("ss_comments","Komentar","")
-        ] %}
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-gray-500 w-40 flex-shrink-0">{{ l }}</label>
-          <input type="text" name="{{ f }}" placeholder="{{ p }}"
-            class="flex-1 text-xs px-2 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400">
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-
-  <!-- MANUAL ENTRY -->
+  <!-- MANUAL ENTRY: platform toggle + structured fields -->
   <div id="c-manual" class="hidden">
-    <div class="grid grid-cols-2 gap-3 mb-4">
-      {% for f,l,p in [
-        ("gmv","GMV (Rp)","41840921"),
-        ("views","Views / Impressions","12500"),
-        ("orders","Orders","28"),
-        ("duration","Duration (min)","185"),
-        ("avg_view_duration","Avg view duration (s)","68"),
-        ("ctor","CTOR % (0–100)","0.33"),
-        ("new_followers","New followers","142")
-      ] %}
-      <div>
-        <label class="text-xs text-gray-500 mb-1 block">{{ l }}</label>
-        <input type="text" name="{{ f }}" placeholder="{{ p }}"
-          class="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400">
-      </div>
-      {% endfor %}
-    </div>
-  </div>
 
-  <div class="mt-4 mb-3">
+    <!-- Platform toggle (in case user wants to switch) -->
+    <div class="flex gap-2 mb-5">
+      <button type="button" id="pill-tiktok" onclick="switchPlatform('tiktok')"
+        class="text-xs px-4 py-1.5 rounded-full border transition-colors
+        {% if platform == 'tiktok' %}bg-gray-900 text-white border-gray-900{% else %}border-gray-200 text-gray-500{% endif %}">
+        TikTok Shop
+      </button>
+      <button type="button" id="pill-shopee" onclick="switchPlatform('shopee')"
+        class="text-xs px-4 py-1.5 rounded-full border transition-colors
+        {% if platform == 'shopee' %}bg-gray-900 text-white border-gray-900{% else %}border-gray-200 text-gray-500{% endif %}">
+        Shopee
+      </button>
+    </div>
+
+    <!-- TikTok fields -->
+    <div id="fields-tiktok" class="{% if platform == 'shopee' %}hidden{% endif %}">
+      <div class="text-xs text-gray-400 uppercase tracking-wider mb-3">TikTok Dashboard metrics</div>
+      <div class="space-y-3">
+        {% for f,l,p,tip in [
+          ("ss_gmv",         "Attributed GMV (Rp)",        "3166320",  ""),
+          ("ss_items_sold",  "Items sold",                  "54",       ""),
+          ("ss_views",       "Views / Impressions",         "66530",    ""),
+          ("ss_peak_viewers","Peak viewers",                "39",       ""),
+          ("ss_duration",    "Duration (min)",              "97",       ""),
+          ("ss_show_gpm",    "Show GPM (Rp)",               "6670",     "GMV per 1,000 impressions"),
+          ("ss_avg_view",    "Avg viewing duration (s)",    "12",       ""),
+          ("ss_tap_through", "Tap-through rate (%)",        "2.64",     "e.g. enter 2.64 for 2.64%"),
+          ("ss_ctor",        "CTOR / Order rate (%)",       "0.33",     "e.g. enter 0.33 for 0.33%"),
+          ("ss_follow_rate", "Follow rate (%)",             "0.13",     "e.g. enter 0.13 for 0.13%"),
+          ("ss_new_followers","New followers",              "142",      ""),
+          ("ss_comments",    "Comments",                    "",         ""),
+          ("ss_likes",       "Likes",                       "",         ""),
+          ("ss_shares",      "Shares",                      "",         "")
+        ] %}
+        <div class="flex items-center gap-3">
+          <div class="w-48 flex-shrink-0">
+            <div class="text-xs text-gray-600">{{ l }}</div>
+            {% if tip %}<div class="text-xs text-gray-300">{{ tip }}</div>{% endif %}
+          </div>
+          <input type="text" name="{{ f }}" placeholder="{{ p }}"
+            class="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Shopee fields -->
+    <div id="fields-shopee" class="{% if platform != 'shopee' %}hidden{% endif %}">
+      <div class="text-xs text-gray-400 uppercase tracking-wider mb-3">Shopee Dashboard metrics</div>
+      <div class="space-y-3">
+        {% for f,l,p,tip in [
+          ("ss_gmv",          "Penjualan / GMV (Rp)",        "5000000", ""),
+          ("ss_orders",       "Pesanan / Orders",            "45",      ""),
+          ("ss_items_sold",   "Produk Terjual",              "30",      ""),
+          ("ss_viewers_total","Total Penonton",              "800",     ""),
+          ("ss_viewers_active","Penonton Aktif",             "120",     ""),
+          ("ss_duration",     "Durasi (min)",                "120",     ""),
+          ("ss_avg_view",     "Avg view duration (s)",       "55",      ""),
+          ("ss_add_to_cart",  "Tambah ke Keranjang",         "60",      ""),
+          ("ss_comments",     "Komentar",                    "",        "")
+        ] %}
+        <div class="flex items-center gap-3">
+          <div class="w-48 flex-shrink-0">
+            <div class="text-xs text-gray-600">{{ l }}</div>
+            {% if tip %}<div class="text-xs text-gray-300">{{ tip }}</div>{% endif %}
+          </div>
+          <input type="text" name="{{ f }}" placeholder="{{ p }}"
+            class="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div><!-- end c-manual -->
+
+  <div class="mt-5 mb-3">
     <label class="text-xs text-gray-400 mb-1 block">Notes <span class="text-gray-300">(optional)</span></label>
-    <textarea name="user_notes" rows="2" placeholder="e.g. Host was new, focus was Turmeric SKU, peak at flash sale..."
+    <textarea name="user_notes" rows="2"
+      placeholder="e.g. Host was new, focus was Turmeric SKU, peak at flash sale..."
       class="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:border-gray-400"></textarea>
   </div>
   <button type="submit" class="w-full bg-gray-900 text-white text-sm py-2.5 rounded-lg hover:bg-gray-800">Analyze stream →</button>
 </form>
 
 <script>
-const platform = "{{ platform }}";
-
 function previewFile(input) {
-  const label = document.getElementById('file-label-text');
-  if (input.files && input.files[0]) label.textContent = input.files[0].name;
-}
-
-function previewScreenshot(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('ss-thumb').src = e.target.result;
-      document.getElementById('ss-preview-wrap').classList.remove('hidden');
-      document.getElementById('ss-placeholder').classList.add('hidden');
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
+  if (input.files && input.files[0])
+    document.getElementById('file-label-text').textContent = input.files[0].name;
 }
 
 function setMode(m) {
-  ['file','screenshot','manual'].forEach(x => {
+  ['file','manual'].forEach(x => {
     document.getElementById('c-'+x).classList.toggle('hidden', x!==m);
     const b = document.getElementById('btn-'+x);
     b.className = 'text-xs px-3 py-1.5 rounded-full border transition-colors ' +
       (x===m ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500');
   });
-  document.getElementById('input_mode').value = m;
-  if (m === 'screenshot') {
-    document.getElementById('ss-fields-tiktok').classList.toggle('hidden', platform !== 'tiktok');
-    document.getElementById('ss-fields-shopee').classList.toggle('hidden', platform !== 'shopee');
-  }
+  document.getElementById('input_mode').value = m === 'manual' ? 'screenshot' : m;
+}
+
+function switchPlatform(p) {
+  document.getElementById('platform_field').value = p;
+  document.getElementById('fields-tiktok').classList.toggle('hidden', p !== 'tiktok');
+  document.getElementById('fields-shopee').classList.toggle('hidden', p !== 'shopee');
+  ['tiktok','shopee'].forEach(x => {
+    const b = document.getElementById('pill-'+x);
+    b.className = 'text-xs px-4 py-1.5 rounded-full border transition-colors ' +
+      (x===p ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500');
+  });
 }
 </script>
 {% endblock %}
