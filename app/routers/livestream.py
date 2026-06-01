@@ -71,15 +71,25 @@ async def analyze(
 
     elif input_mode == "image" and image:
         img_bytes = await image.read()
-        extracted = extract_from_screenshot(img_bytes, image.content_type)
+        if not img_bytes:
+            return HTMLResponse("No image received", status_code=400)
+        try:
+            media_type = image.content_type or "image/png"
+            extracted = extract_from_screenshot(img_bytes, media_type)
+        except Exception as e:
+            return HTMLResponse(f"Vision extraction failed: {e}", status_code=500)
         record = StandardStreamRecord(
             entity_id=entity_id, platform=Platform(platform),
             stream_type=StreamType(stream_type),
             stream_title=extracted.get("stream_title") or "",
             duration_minutes=0,
             gmv_affiliate=extracted.get("gmv_total"),
-            views_total=extracted.get("views"),
+            views_total=int(extracted.get("views") or 0) or None,
             avg_view_duration_s=extracted.get("avg_view_duration_s"),
+            show_gpm=int(extracted.get("show_gpm") or 0) or None,
+            tap_through_rate=extracted.get("tap_through_rate"),
+            ctor=extracted.get("live_ctr"),
+            follow_rate=extracted.get("follow_rate"),
         )
 
     elif input_mode == "manual":
