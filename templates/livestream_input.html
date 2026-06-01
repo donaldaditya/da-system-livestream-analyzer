@@ -17,9 +17,9 @@
   {% endfor %}
 </div>
 <form action="/livestream-analyzer/analyze" method="post" enctype="multipart/form-data">
-  <input type="hidden" name="entity_id" value="{{ request.query_params.get('entity_id','') }}">
-  <input type="hidden" name="platform" value="{{ request.query_params.get('platform','tiktok') }}">
-  <input type="hidden" name="stream_type" value="{{ request.query_params.get('stream_type','bau') }}">
+  <input type="hidden" name="entity_id" value="{{ entity_id }}">
+  <input type="hidden" name="platform" value="{{ platform }}">
+  <input type="hidden" name="stream_type" value="{{ stream_type }}">
   <input type="hidden" name="input_mode" id="input_mode" value="file">
   <div id="c-file">
     <label class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-300">

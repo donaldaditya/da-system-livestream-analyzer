@@ -18,12 +18,16 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/")
 async def setup(request: Request):
-    return templates.TemplateResponse("livestream_setup.html",
-        {"request": request, "entities": get_all_entities()})
+    return templates.TemplateResponse(request, "livestream_setup.html",
+        {"entities": get_all_entities()})
 
 @router.get("/input")
 async def input_page(request: Request):
-    return templates.TemplateResponse("livestream_input.html", {"request": request})
+    return templates.TemplateResponse(request, "livestream_input.html", {
+        "entity_id": request.query_params.get("entity_id", ""),
+        "platform": request.query_params.get("platform", "tiktok"),
+        "stream_type": request.query_params.get("stream_type", "bau"),
+    })
 
 @router.post("/analyze")
 async def analyze(
@@ -90,5 +94,5 @@ async def analyze(
     analysis = analyze_stream(record, scores, entity, history_avg, user_notes)
     append_history(entity_id, StreamAnalysis(stream=record, scores=scores, analysis=analysis, user_notes=user_notes))
 
-    return templates.TemplateResponse("livestream_analysis.html",
-        {"request": request, "record": record, "scores": scores, "analysis": analysis, "entity": entity})
+    return templates.TemplateResponse(request, "livestream_analysis.html",
+        {"record": record, "scores": scores, "analysis": analysis, "entity": entity})
