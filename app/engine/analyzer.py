@@ -1,7 +1,8 @@
 import anthropic, json, os
 from app.models.stream import StandardStreamRecord, PerformanceScore, AnalysisResult
 
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+def _client():
+    return anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 SYSTEM = """You are a livestream commerce analyst for Emtek Commerce / Sinemart Digital,
 an MCN on TikTok Shop, Shopee, Tokopedia in Indonesia.
@@ -50,7 +51,7 @@ Respond ONLY in this exact JSON:
 "analysis_quality_suggestions":["suggestion"],
 "whatsapp_summary":"Bahasa Indonesia, max 5 bullets"}}"""
 
-    response = client.messages.create(
+    response = _client().messages.create(
         model="claude-sonnet-4-5-20251001", max_tokens=2000,
         system=SYSTEM, messages=[{"role":"user","content":prompt}]
     )
