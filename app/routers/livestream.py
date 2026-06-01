@@ -155,7 +155,10 @@ async def analyze(
     record = normalize(record)
     scores = score_stream(record)
     history_avg = get_rolling_avg(entity_id)
-    analysis = analyze_stream(record, scores, entity, history_avg, user_notes)
+    try:
+        analysis = analyze_stream(record, scores, entity, history_avg, user_notes)
+    except Exception as e:
+        return HTMLResponse(f"Analysis failed: {e}", status_code=500)
     append_history(entity_id, StreamAnalysis(stream=record, scores=scores, analysis=analysis, user_notes=user_notes))
 
     return templates.TemplateResponse(request, "livestream_analysis.html",
