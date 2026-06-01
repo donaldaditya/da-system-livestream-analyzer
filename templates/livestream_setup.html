@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Livestream Analyzer — Setup{% endblock %}
+{% block content %}
+<div class="flex items-center gap-3 mb-6">
+  <a href="/" class="text-gray-400 text-sm">←</a>
+  <div>
+    <div class="flex items-center gap-2">
+      <span class="text-base font-medium">Livestream Analyzer</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">Tool 02</span>
+    </div>
+    <div class="text-xs text-gray-400">TikTok Shop · Shopee · Tokopedia</div>
+  </div>
+</div>
+<div class="flex border-b border-gray-100 mb-6">
+  <div class="text-xs py-2 px-4 border-b-2 border-gray-900 font-medium">1 — Setup</div>
+  <div class="text-xs py-2 px-4 text-gray-400">2 — Input</div>
+  <div class="text-xs py-2 px-4 text-gray-400">3 — Analysis</div>
+</div>
+<form action="/livestream-analyzer/input" method="get">
+  <input type="hidden" name="platform" id="platform_val" value="tiktok">
+  <input type="hidden" name="stream_type" id="stream_type_val" value="bau">
+  <input type="hidden" name="entity_id" id="entity_id_val">
+  <div class="mb-5">
+    <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Platform</div>
+    <div class="flex gap-2">
+      {% for val, label in [("tiktok","TikTok Shop"),("shopee","Shopee"),("tokopedia","Tokopedia")] %}
+      <button type="button" data-field="platform_val" data-value="{{ val }}"
+        onclick="selectPill(this)"
+        class="pill text-xs px-4 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 {% if val == 'tiktok' %}bg-gray-900 text-white border-gray-900{% endif %}">
+        {{ label }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="mb-5">
+    <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Entity</div>
+    <select onchange="document.getElementById('entity_id_val').value=this.value"
+      class="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg bg-white">
+      <option value="">Select entity...</option>
+      {% for eid, edata in entities.items() %}
+      <option value="{{ eid }}">{{ edata.display_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-6">
+    <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Stream type</div>
+    <div class="flex flex-wrap gap-2">
+      {% for val, label in [("bau","BAU"),("campaign_payday","Campaign — Payday"),
+        ("campaign_double","Campaign — Double Date"),("campaign_brand","Campaign — Brand"),
+        ("collab","Collab"),("other","Other")] %}
+      <button type="button" data-field="stream_type_val" data-value="{{ val }}"
+        onclick="selectPill(this)"
+        class="pill text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 {% if val == 'bau' %}bg-gray-900 text-white border-gray-900{% endif %}">
+        {{ label }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+  <button type="submit" class="w-full bg-gray-900 text-white text-sm py-2.5 rounded-lg hover:bg-gray-800">Continue →</button>
+</form>
+<script>
+function selectPill(btn) {
+  const field = btn.dataset.field;
+  btn.closest('.flex').querySelectorAll('.pill').forEach(b => {
+    b.classList.remove('bg-gray-900','text-white','border-gray-900');
+    b.classList.add('border-gray-200','text-gray-500');
+  });
+  btn.classList.add('bg-gray-900','text-white','border-gray-900');
+  btn.classList.remove('border-gray-200','text-gray-500');
+  document.getElementById(field).value = btn.dataset.value;
+}
+</script>
+{% endblock %}

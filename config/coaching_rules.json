@@ -1,0 +1,34 @@
+{
+  "rules": [
+    {
+      "id": "low_ctor",
+      "metric": "ctor",
+      "condition": "below_avg",
+      "flag": "CTOR below market average — product showcase not converting browsers to buyers",
+      "fix": "Pin best-selling SKU, demo live, add countdown timer voucher",
+      "check_outside": "Review product card thumbnails and pricing vs competitors"
+    },
+    {
+      "id": "low_avg_view_duration",
+      "metric": "avg_view_duration_s",
+      "condition": "below_avg",
+      "flag": "Short watch time — viewers dropping off early",
+      "fix": "Open with product demo hook in first 30s, announce giveaway at start",
+      "check_outside": "Check stream title and thumbnail for mismatch with content"
+    },
+    {
+      "id": "low_follow_rate",
+      "metric": "follow_rate",
+      "condition": "below_avg",
+      "flag": "Low follow conversion — audience not converting to followers",
+      "fix": "Add explicit follow CTA every 10 minutes, offer follower-only discount"
+    },
+    {
+      "id": "low_conversion",
+      "metric": "conversion_rate",
+      "condition": "below_avg",
+      "flag": "Conversion below benchmark — traffic not buying",
+      "fix": "Introduce flash sale mechanic, limit stock display, host urgency scripting"
+    }
+  ]
+}

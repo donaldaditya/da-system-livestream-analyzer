@@ -1,0 +1,21 @@
+{
+  "creators": {
+    "adamjordanreal": {
+      "display_name": "Adam Jordan",
+      "platform": "tiktok",
+      "tier": "mid",
+      "category": "fragrance_beauty",
+      "target_gmv_per_stream": 50000000,
+      "contract_type": "creator"
+    },
+    "fromthisisland": {
+      "display_name": "From This Island",
+      "platform": "shopee",
+      "shop_id": "1086920853",
+      "tier": "brand",
+      "category": "beauty",
+      "target_gmv_per_stream": 10000000,
+      "contract_type": "brand"
+    }
+  }
+}

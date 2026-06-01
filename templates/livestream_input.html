@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Livestream Analyzer — Input{% endblock %}
+{% block content %}
+<a href="/livestream-analyzer" class="text-gray-400 text-sm">← Back</a>
+<div class="flex border-b border-gray-100 my-4">
+  <div class="text-xs py-2 px-4 text-gray-400">1 — Setup</div>
+  <div class="text-xs py-2 px-4 border-b-2 border-gray-900 font-medium">2 — Input</div>
+  <div class="text-xs py-2 px-4 text-gray-400">3 — Analysis</div>
+</div>
+<div class="flex gap-2 mb-5">
+  {% for m, label in [("file","Upload file"),("image","Screenshot"),("manual","Manual entry")] %}
+  <button onclick="setMode('{{ m }}')" id="btn-{{ m }}"
+    class="text-xs px-3 py-1.5 rounded-full border transition-colors
+    {% if m == 'file' %}bg-gray-900 text-white border-gray-900{% else %}border-gray-200 text-gray-500{% endif %}">
+    {{ label }}
+  </button>
+  {% endfor %}
+</div>
+<form action="/livestream-analyzer/analyze" method="post" enctype="multipart/form-data">
+  <input type="hidden" name="entity_id" value="{{ request.query_params.get('entity_id','') }}">
+  <input type="hidden" name="platform" value="{{ request.query_params.get('platform','tiktok') }}">
+  <input type="hidden" name="stream_type" value="{{ request.query_params.get('stream_type','bau') }}">
+  <input type="hidden" name="input_mode" id="input_mode" value="file">
+  <div id="c-file">
+    <label class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-300">
+      <div class="text-gray-300 text-2xl mb-2">↑</div>
+      <div class="text-sm font-medium text-gray-700 mb-1">Drop XLSX or CSV export</div>
+      <div class="text-xs text-gray-400">TikTok MCN · Shopee Seller Centre</div>
+      <input type="file" name="file" accept=".xlsx,.csv" class="hidden">
+    </label>
+  </div>
+  <div id="c-image" class="hidden">
+    <label class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-300">
+      <div class="text-gray-300 text-2xl mb-2">◻</div>
+      <div class="text-sm font-medium text-gray-700 mb-1">Upload dashboard screenshot</div>
+      <div class="text-xs text-gray-400">Claude Vision extracts metrics automatically</div>
+      <input type="file" name="image" accept="image/*" class="hidden">
+    </label>
+  </div>
+  <div id="c-manual" class="hidden">
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      {% for f,l,p in [("gmv","GMV (Rp)","41840921"),("views","Views","12500"),
+        ("orders","Orders","28"),("duration","Duration (min)","185"),
+        ("avg_view_duration","Avg view duration (s)","68"),("ctor","CTOR (0–1)","0.027"),
+        ("new_followers","New followers","142")] %}
+      <div>
+        <label class="text-xs text-gray-500 mb-1 block">{{ l }}</label>
+        <input type="text" name="{{ f }}" placeholder="{{ p }}"
+          class="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg">
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="mt-4 mb-3">
+    <label class="text-xs text-gray-400 mb-1 block">Notes (optional)</label>
+    <textarea name="user_notes" rows="2" placeholder="e.g. Host was new, focus was Turmeric SKU..."
+      class="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg resize-none"></textarea>
+  </div>
+  <button type="submit" class="w-full bg-gray-900 text-white text-sm py-2.5 rounded-lg hover:bg-gray-800">Analyze stream →</button>
+</form>
+<script>
+function setMode(m) {
+  ['file','image','manual'].forEach(x => {
+    document.getElementById('c-'+x).classList.toggle('hidden', x!==m);
+    const b = document.getElementById('btn-'+x);
+    b.className = 'text-xs px-3 py-1.5 rounded-full border transition-colors ' +
+      (x===m ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500');
+  });
+  document.getElementById('input_mode').value = m;
+}
+</script>
+{% endblock %}

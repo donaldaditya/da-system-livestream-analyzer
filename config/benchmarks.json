@@ -1,0 +1,23 @@
+{
+  "tiktok": {
+    "market_defaults": {
+      "tap_through_rate":    {"poor":0.03,"avg":0.06,"good":0.10,"elite":0.15},
+      "product_ctr":         {"poor":0.05,"avg":0.15,"good":0.25,"elite":0.35},
+      "ctor":                {"poor":0.01,"avg":0.03,"good":0.06,"elite":0.10},
+      "avg_view_duration_s": {"poor":10,  "avg":18,  "good":25,  "elite":40  },
+      "show_gpm_idr":        {"poor":5000,"avg":20000,"good":40000,"elite":80000},
+      "conversion_rate":     {"poor":0.005,"avg":0.012,"good":0.025,"elite":0.05},
+      "follow_rate":         {"poor":0.002,"avg":0.008,"good":0.015,"elite":0.025}
+    },
+    "emtek_portfolio_avg": {}
+  },
+  "shopee": {
+    "market_defaults": {
+      "atc_rate":            {"poor":0.05,"avg":0.15,"good":0.25,"elite":0.40},
+      "conversion_rate":     {"poor":0.010,"avg":0.025,"good":0.045,"elite":0.08},
+      "avg_view_duration_s": {"poor":30,  "avg":55,  "good":90,  "elite":150 },
+      "gmv_per_hour_idr":    {"poor":1000000,"avg":3000000,"good":6000000,"elite":12000000}
+    },
+    "emtek_portfolio_avg": {}
+  }
+}

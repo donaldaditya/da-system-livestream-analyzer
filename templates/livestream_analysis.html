@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Analysis — {{ entity.display_name }}{% endblock %}
+{% block content %}
+<a href="/livestream-analyzer" class="text-gray-400 text-sm">← New stream</a>
+<div class="flex border-b border-gray-100 my-4">
+  <div class="text-xs py-2 px-4 text-gray-400">1 — Setup</div>
+  <div class="text-xs py-2 px-4 text-gray-400">2 — Input</div>
+  <div class="text-xs py-2 px-4 border-b-2 border-gray-900 font-medium">3 — Analysis</div>
+</div>
+{% set tc = {"S":"bg-emerald-100 text-emerald-800","A":"bg-green-100 text-green-800","B":"bg-amber-100 text-amber-800","C":"bg-orange-100 text-orange-800","D":"bg-red-100 text-red-800"} %}
+<div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl mb-4">
+  <div class="w-14 h-14 rounded-xl flex flex-col items-center justify-center flex-shrink-0 {{ tc[analysis.performance_tier] }}">
+    <span class="text-2xl font-medium leading-none">{{ analysis.performance_tier }}</span>
+    <span class="text-xs mt-0.5 opacity-70">{{ scores.overall }}/100</span>
+  </div>
+  <div class="flex-1">
+    <div class="text-xs text-gray-400 mb-0.5">{{ entity.display_name }} · {{ record.platform }} · {{ record.stream_type }}</div>
+    <p class="text-sm font-medium leading-snug" contenteditable="true">{{ analysis.headline }}</p>
+  </div>
+  <div class="text-right">
+    <div class="text-2xl font-medium">{{ scores.overall }}</div>
+    <div class="text-xs text-gray-400">/ 100</div>
+  </div>
+</div>
+<div class="grid grid-cols-3 gap-2 mb-4">
+  <div class="bg-gray-50 rounded-lg p-3">
+    <div class="text-xs text-gray-400 mb-1">GMV total</div>
+    <div class="text-base font-medium">Rp {{ "{:,}".format(record.gmv_total).replace(",",".") }}</div>
+  </div>
+  <div class="bg-gray-50 rounded-lg p-3">
+    <div class="text-xs text-gray-400 mb-1">GMV / hour</div>
+    <div class="text-base font-medium">Rp {{ "{:,}".format(record.gmv_per_hour|int).replace(",",".") }}</div>
+  </div>
+  <div class="bg-gray-50 rounded-lg p-3">
+    <div class="text-xs text-gray-400 mb-1">Orders</div>
+    <div class="text-base font-medium">{{ record.orders_paid or record.orders_confirmed or 0 }}</div>
+  </div>
+</div>
+<div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
+  <div class="text-xs text-gray-400 uppercase tracking-wider mb-3">Dimension scores</div>
+  {% for dim in [scores.revenue, scores.traffic, scores.engagement, scores.conversion, scores.audience_growth, scores.product_mix, scores.consistency] %}
+  {% set bc = "bg-green-500" if dim.score >= 70 else ("bg-amber-400" if dim.score >= 50 else "bg-red-400") %}
+  <div class="flex items-center gap-2 mb-2">
+    <span class="text-xs text-gray-500 w-28 flex-shrink-0">{{ dim.label }}</span>
+    <div class="flex-1 bg-gray-100 rounded-full h-1.5">
+      <div class="{{ bc }} h-1.5 rounded-full" style="width:{{ dim.score }}%"></div>
+    </div>
+    <span class="text-xs font-medium w-7 text-right">{{ dim.score }}</span>
+    <span class="text-xs w-12 {% if dim.vs_self_pct and dim.vs_self_pct > 0 %}text-green-600{% elif dim.vs_self_pct and dim.vs_self_pct < 0 %}text-red-500{% else %}text-gray-400{% endif %}">
+      {% if dim.vs_self_pct %}{{ "+" if dim.vs_self_pct > 0 }}{{ dim.vs_self_pct }}%{% else %}—{% endif %}
+    </span>
+  </div>
+  {% endfor %}
+</div>
+<div class="grid grid-cols-2 gap-3 mb-4">
+  <div class="bg-white border border-gray-100 rounded-xl p-4">
+    <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">What worked</div>
+    <ul class="space-y-1">
+      {% for item in analysis.what_worked %}
+      <li class="text-xs text-gray-700 list-disc ml-3 leading-relaxed" contenteditable="true">{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="bg-white border border-gray-100 rounded-xl p-4">
+    <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">What didn't</div>
+    <ul class="space-y-1">
+      {% for item in analysis.what_didnt %}
+      <li class="text-xs text-gray-700 list-disc ml-3 leading-relaxed" contenteditable="true">{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+<div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
+  <div class="text-xs text-gray-400 uppercase tracking-wider mb-3">Next 3 actions</div>
+  {% for a in analysis.next_stream_actions %}
+  <div class="border-l-2 border-blue-400 pl-3 mb-3">
+    <div class="text-xs font-medium text-blue-600 mb-0.5">Priority {{ a.priority }}</div>
+    <div class="text-xs text-gray-800 mb-0.5" contenteditable="true">{{ a.action }}</div>
+    <div class="text-xs text-gray-400">{{ a.expected_impact }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% if analysis.coaching_flags %}
+<div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
+  <div class="text-xs text-gray-400 uppercase tracking-wider mb-3">Coaching flags</div>
+  {% for f in analysis.coaching_flags %}
+  <div class="border-l-2 border-orange-400 bg-orange-50 pl-3 py-2 rounded-r mb-2">
+    <div class="text-xs font-medium text-orange-800 mb-0.5">{{ f.metric }}</div>
+    <div class="text-xs text-orange-700">{{ f.fix }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+<div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
+  <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">WhatsApp summary</div>
+  <div id="wa" class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs text-green-900 leading-relaxed whitespace-pre-line mb-2">{{ analysis.whatsapp_summary }}</div>
+  <button onclick="navigator.clipboard.writeText(document.getElementById('wa').textContent)"
+    class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50">Copy for WhatsApp</button>
+</div>
+<div class="bg-white border border-gray-100 rounded-xl p-4 mb-6">
+  <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">How to improve this analysis</div>
+  <ul class="space-y-1">
+    {% for s in analysis.analysis_quality_suggestions %}
+    <li class="text-xs text-gray-500 list-disc ml-3">{{ s }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

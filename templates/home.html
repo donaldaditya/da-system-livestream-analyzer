@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}DA System{% endblock %}
+{% block content %}
+<div class="mb-8">
+  <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">v0.3 · Live</p>
+  <h1 class="text-3xl font-medium tracking-tight mb-2">Data to action<br><span class="text-gray-400">for commerce teams</span></h1>
+  <p class="text-sm text-gray-500 max-w-md leading-relaxed">AI tools that turn raw platform exports into decisions. Built for TikTok Shop, Shopee, and Tokopedia operators in Southeast Asia.</p>
+</div>
+<div class="grid grid-cols-2 gap-3">
+  <a href="/livestream-analyzer" class="block bg-white border border-gray-100 rounded-xl p-5 hover:border-gray-300 transition-colors">
+    <div class="flex justify-between mb-3">
+      <span class="text-xs text-gray-400 uppercase tracking-wider">Tool 02</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">New</span>
+    </div>
+    <div class="text-sm font-medium mb-1">Livestream Analyzer</div>
+    <div class="text-xs text-gray-500 leading-relaxed">Post-stream AI diagnosis — score, benchmark, coaching brief, WhatsApp export.</div>
+  </a>
+  <div class="block bg-white border border-gray-100 rounded-xl p-5 opacity-50">
+    <div class="flex justify-between mb-3">
+      <span class="text-xs text-gray-400 uppercase tracking-wider">Tool 03</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">Soon</span>
+    </div>
+    <div class="text-sm font-medium mb-1">Campaign Planner</div>
+    <div class="text-xs text-gray-500 leading-relaxed">Simulate GMV outcomes before committing budget.</div>
+  </div>
+</div>
+{% endblock %}
