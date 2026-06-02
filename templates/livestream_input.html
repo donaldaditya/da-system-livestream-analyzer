@@ -25,21 +25,89 @@
   <input type="hidden" name="platform" id="platform_field" value="{{ platform }}">
   <input type="hidden" name="stream_type" value="{{ stream_type }}">
   <input type="hidden" name="input_mode" id="input_mode" value="file">
+  <input type="hidden" name="file_subtype" id="file_subtype" value="data">
 
-  <!-- FILE UPLOAD -->
+  <!-- ── UPLOAD FILE ── -->
   <div id="c-file">
-    <label class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-blue-300">
+    <label class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-gray-300 transition-colors">
       <div class="text-gray-300 text-2xl mb-2">↑</div>
-      <div class="text-sm font-medium text-gray-700 mb-1" id="file-label-text">Drop XLSX, XLS or CSV export</div>
-      <div class="text-xs text-gray-400">TikTok MCN export · Shopee Seller Centre</div>
-      <input type="file" name="file" accept=".xlsx,.xls,.csv" class="hidden" onchange="previewFile(this)">
+      <div class="text-sm font-medium text-gray-700 mb-1" id="file-label-text">Drop file here or click to browse</div>
+      <div class="text-xs text-gray-400">XLSX · XLS · CSV · PNG · JPG · PDF</div>
+      <input type="file" name="file" accept=".xlsx,.xls,.csv,.png,.jpg,.jpeg,.pdf,.webp" class="hidden" id="file-input" onchange="handleFileUpload(this)">
     </label>
+
+    <!-- Image preview (shown when image/pdf uploaded) -->
+    <div id="img-preview-wrap" class="hidden mt-3 rounded-xl overflow-hidden border border-gray-100">
+      <img id="img-preview" src="" class="w-full max-h-64 object-contain bg-gray-50">
+    </div>
+
+    <!-- Structured form shown when image/pdf uploaded -->
+    <div id="image-form-section" class="hidden mt-4">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="text-xs text-gray-400 uppercase tracking-wider">Read metrics from your screenshot and enter below</div>
+      </div>
+      {% include "partials/_metrics_form.html" ignore missing %}
+      <!-- TikTok fields -->
+      <div id="img-fields-tiktok" class="{% if platform == 'shopee' %}hidden{% endif %}">
+        <div class="space-y-3">
+          {% for f,l,p,tip in [
+            ("ss_gmv",         "Attributed GMV (Rp)",       "3166320",  ""),
+            ("ss_items_sold",  "Items sold",                 "54",       ""),
+            ("ss_views",       "Views / Impressions",        "66530",    ""),
+            ("ss_peak_viewers","Peak viewers",               "39",       ""),
+            ("ss_duration",    "Duration (min)",             "97",       ""),
+            ("ss_show_gpm",    "Show GPM (Rp)",              "6670",     "GMV per 1,000 impressions"),
+            ("ss_avg_view",    "Avg viewing duration (s)",   "12",       ""),
+            ("ss_tap_through", "Tap-through rate (%)",       "2.64",     "e.g. 2.64 for 2.64%"),
+            ("ss_ctor",        "CTOR / Order rate (%)",      "0.33",     "e.g. 0.33 for 0.33%"),
+            ("ss_follow_rate", "Follow rate (%)",            "0.13",     "e.g. 0.13 for 0.13%"),
+            ("ss_new_followers","New followers",             "142",      ""),
+            ("ss_comments",    "Comments",                   "",         ""),
+            ("ss_likes",       "Likes",                      "",         ""),
+            ("ss_shares",      "Shares",                     "",         "")
+          ] %}
+          <div class="flex items-center gap-3">
+            <div class="w-48 flex-shrink-0">
+              <div class="text-xs text-gray-600">{{ l }}</div>
+              {% if tip %}<div class="text-xs text-gray-300">{{ tip }}</div>{% endif %}
+            </div>
+            <input type="text" name="{{ f }}" placeholder="{{ p }}"
+              class="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <!-- Shopee fields -->
+      <div id="img-fields-shopee" class="{% if platform != 'shopee' %}hidden{% endif %}">
+        <div class="space-y-3">
+          {% for f,l,p,tip in [
+            ("ss_gmv",          "GMV / Sales (Rp)",          "5000000",  ""),
+            ("ss_orders",       "Orders confirmed",          "45",       ""),
+            ("ss_items_sold",   "Items sold",                "30",       ""),
+            ("ss_viewers_total","Total viewers",             "800",      ""),
+            ("ss_viewers_active","Active viewers",           "120",      ""),
+            ("ss_duration",     "Duration (min)",            "120",      ""),
+            ("ss_avg_view",     "Avg view duration (s)",     "55",       ""),
+            ("ss_add_to_cart",  "Add to cart",               "60",       ""),
+            ("ss_comments",     "Comments",                  "",         "")
+          ] %}
+          <div class="flex items-center gap-3">
+            <div class="w-48 flex-shrink-0">
+              <div class="text-xs text-gray-600">{{ l }}</div>
+              {% if tip %}<div class="text-xs text-gray-300">{{ tip }}</div>{% endif %}
+            </div>
+            <input type="text" name="{{ f }}" placeholder="{{ p }}"
+              class="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- MANUAL ENTRY: platform toggle + structured fields -->
+  <!-- ── MANUAL ENTRY ── -->
   <div id="c-manual" class="hidden">
-
-    <!-- Platform toggle (in case user wants to switch) -->
+    <!-- Platform toggle -->
     <div class="flex gap-2 mb-5">
       <button type="button" id="pill-tiktok" onclick="switchPlatform('tiktok')"
         class="text-xs px-4 py-1.5 rounded-full border transition-colors
@@ -53,25 +121,25 @@
       </button>
     </div>
 
-    <!-- TikTok fields -->
+    <!-- TikTok -->
     <div id="fields-tiktok" class="{% if platform == 'shopee' %}hidden{% endif %}">
       <div class="text-xs text-gray-400 uppercase tracking-wider mb-3">TikTok Dashboard metrics</div>
       <div class="space-y-3">
         {% for f,l,p,tip in [
-          ("ss_gmv",         "Attributed GMV (Rp)",        "3166320",  ""),
-          ("ss_items_sold",  "Items sold",                  "54",       ""),
-          ("ss_views",       "Views / Impressions",         "66530",    ""),
-          ("ss_peak_viewers","Peak viewers",                "39",       ""),
-          ("ss_duration",    "Duration (min)",              "97",       ""),
-          ("ss_show_gpm",    "Show GPM (Rp)",               "6670",     "GMV per 1,000 impressions"),
-          ("ss_avg_view",    "Avg viewing duration (s)",    "12",       ""),
-          ("ss_tap_through", "Tap-through rate (%)",        "2.64",     "e.g. enter 2.64 for 2.64%"),
-          ("ss_ctor",        "CTOR / Order rate (%)",       "0.33",     "e.g. enter 0.33 for 0.33%"),
-          ("ss_follow_rate", "Follow rate (%)",             "0.13",     "e.g. enter 0.13 for 0.13%"),
-          ("ss_new_followers","New followers",              "142",      ""),
-          ("ss_comments",    "Comments",                    "",         ""),
-          ("ss_likes",       "Likes",                       "",         ""),
-          ("ss_shares",      "Shares",                      "",         "")
+          ("ss_gmv",         "Attributed GMV (Rp)",       "3166320",  ""),
+          ("ss_items_sold",  "Items sold",                 "54",       ""),
+          ("ss_views",       "Views / Impressions",        "66530",    ""),
+          ("ss_peak_viewers","Peak viewers",               "39",       ""),
+          ("ss_duration",    "Duration (min)",             "97",       ""),
+          ("ss_show_gpm",    "Show GPM (Rp)",              "6670",     "GMV per 1,000 impressions"),
+          ("ss_avg_view",    "Avg viewing duration (s)",   "12",       ""),
+          ("ss_tap_through", "Tap-through rate (%)",       "2.64",     "e.g. 2.64 for 2.64%"),
+          ("ss_ctor",        "CTOR / Order rate (%)",      "0.33",     "e.g. 0.33 for 0.33%"),
+          ("ss_follow_rate", "Follow rate (%)",            "0.13",     "e.g. 0.13 for 0.13%"),
+          ("ss_new_followers","New followers",             "142",      ""),
+          ("ss_comments",    "Comments",                   "",         ""),
+          ("ss_likes",       "Likes",                      "",         ""),
+          ("ss_shares",      "Shares",                     "",         "")
         ] %}
         <div class="flex items-center gap-3">
           <div class="w-48 flex-shrink-0">
@@ -85,20 +153,20 @@
       </div>
     </div>
 
-    <!-- Shopee fields -->
+    <!-- Shopee -->
     <div id="fields-shopee" class="{% if platform != 'shopee' %}hidden{% endif %}">
       <div class="text-xs text-gray-400 uppercase tracking-wider mb-3">Shopee Dashboard metrics</div>
       <div class="space-y-3">
         {% for f,l,p,tip in [
-          ("ss_gmv",          "Penjualan / GMV (Rp)",        "5000000", ""),
-          ("ss_orders",       "Pesanan / Orders",            "45",      ""),
-          ("ss_items_sold",   "Produk Terjual",              "30",      ""),
-          ("ss_viewers_total","Total Penonton",              "800",     ""),
-          ("ss_viewers_active","Penonton Aktif",             "120",     ""),
-          ("ss_duration",     "Durasi (min)",                "120",     ""),
-          ("ss_avg_view",     "Avg view duration (s)",       "55",      ""),
-          ("ss_add_to_cart",  "Tambah ke Keranjang",         "60",      ""),
-          ("ss_comments",     "Komentar",                    "",        "")
+          ("ss_gmv",          "GMV / Sales (Rp)",          "5000000",  ""),
+          ("ss_orders",       "Orders confirmed",          "45",       ""),
+          ("ss_items_sold",   "Items sold",                "30",       ""),
+          ("ss_viewers_total","Total viewers",             "800",      ""),
+          ("ss_viewers_active","Active viewers",           "120",      ""),
+          ("ss_duration",     "Duration (min)",            "120",      ""),
+          ("ss_avg_view",     "Avg view duration (s)",     "55",       ""),
+          ("ss_add_to_cart",  "Add to cart",               "60",       ""),
+          ("ss_comments",     "Comments",                  "",         "")
         ] %}
         <div class="flex items-center gap-3">
           <div class="w-48 flex-shrink-0">
@@ -111,8 +179,7 @@
         {% endfor %}
       </div>
     </div>
-
-  </div><!-- end c-manual -->
+  </div>
 
   <div class="mt-5 mb-3">
     <label class="text-xs text-gray-400 mb-1 block">Notes <span class="text-gray-300">(optional)</span></label>
@@ -124,9 +191,37 @@
 </form>
 
 <script>
-function previewFile(input) {
-  if (input.files && input.files[0])
-    document.getElementById('file-label-text').textContent = input.files[0].name;
+const DATA_EXTS = ['xlsx','xls','csv'];
+const IMAGE_EXTS = ['png','jpg','jpeg','pdf','webp'];
+
+function handleFileUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const ext = file.name.split('.').pop().toLowerCase();
+  const labelText = document.getElementById('file-label-text');
+  labelText.textContent = file.name;
+
+  if (DATA_EXTS.includes(ext)) {
+    document.getElementById('file_subtype').value = 'data';
+    document.getElementById('image-form-section').classList.add('hidden');
+    document.getElementById('img-preview-wrap').classList.add('hidden');
+  } else if (IMAGE_EXTS.includes(ext)) {
+    document.getElementById('file_subtype').value = 'image';
+    document.getElementById('image-form-section').classList.remove('hidden');
+    // show preview for non-pdf
+    if (ext !== 'pdf') {
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('img-preview').src = e.target.result;
+        document.getElementById('img-preview-wrap').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+    // show correct platform fields
+    const plat = document.getElementById('platform_field').value;
+    document.getElementById('img-fields-tiktok').classList.toggle('hidden', plat !== 'tiktok');
+    document.getElementById('img-fields-shopee').classList.toggle('hidden', plat !== 'shopee');
+  }
 }
 
 function setMode(m) {
@@ -136,7 +231,7 @@ function setMode(m) {
     b.className = 'text-xs px-3 py-1.5 rounded-full border transition-colors ' +
       (x===m ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500');
   });
-  document.getElementById('input_mode').value = m === 'manual' ? 'screenshot' : m;
+  document.getElementById('input_mode').value = m === 'manual' ? 'screenshot' : 'file';
 }
 
 function switchPlatform(p) {

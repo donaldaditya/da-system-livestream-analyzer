@@ -57,6 +57,7 @@ async def analyze(
     stream_type: str = Form(...),
     input_mode: str = Form(...),
     target_gmv: str = Form(""),
+    file_subtype: str = Form("data"),
     # file upload
     file: UploadFile | None = File(None),
     # screenshot fields — TikTok
@@ -82,24 +83,53 @@ async def analyze(
     record = None
 
     if input_mode == "file" and file and file.filename:
-        suffix = os.path.splitext(file.filename)[1] or ".xlsx"
         # use filename as entity id if no name given
         if not entity_name.strip():
             entity_id = _slug(os.path.splitext(file.filename)[0])
             entity["display_name"] = os.path.splitext(file.filename)[0]
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            tmp.write(await file.read())
-            tmp_path = tmp.name
-        try:
+
+        if file_subtype == "image":
+            # image/pdf uploaded — use ss_ form fields (user typed from screenshot)
             if platform == "tiktok":
-                records = parse_tiktok_export(tmp_path, entity_id, StreamType(stream_type))
+                record = StandardStreamRecord(
+                    entity_id=entity_id, platform=Platform.tiktok,
+                    stream_type=StreamType(stream_type),
+                    duration_minutes=_f(ss_duration),
+                    gmv_affiliate=_i(ss_gmv), items_sold=_i(ss_items_sold),
+                    views_total=_i(ss_views), viewers_peak=_i(ss_peak_viewers),
+                    show_gpm=_i(ss_show_gpm), avg_view_duration_s=_f(ss_avg_view),
+                    tap_through_rate=_f(ss_tap_through)/100 if _f(ss_tap_through)>1 else _f(ss_tap_through),
+                    ctor=_f(ss_ctor)/100 if _f(ss_ctor)>1 else _f(ss_ctor),
+                    follow_rate=_f(ss_follow_rate)/100 if _f(ss_follow_rate)>1 else _f(ss_follow_rate),
+                    new_followers=_i(ss_new_followers),
+                    comments=_i(ss_comments), likes=_i(ss_likes), shares=_i(ss_shares),
+                )
             else:
-                records = parse_shopee_export(tmp_path, entity_id, StreamType(stream_type))
-            record = records[0] if records else None
-        except Exception as e:
-            return HTMLResponse(f"File parsing failed: {e}", status_code=400)
-        finally:
-            os.unlink(tmp_path)
+                record = StandardStreamRecord(
+                    entity_id=entity_id, platform=Platform.shopee,
+                    stream_type=StreamType(stream_type),
+                    duration_minutes=_f(ss_duration),
+                    gmv_confirmed=_i(ss_gmv), orders_confirmed=_i(ss_orders),
+                    items_sold=_i(ss_items_sold), viewers_total=_i(ss_viewers_total),
+                    viewers_active=_i(ss_viewers_active), avg_view_duration_s=_f(ss_avg_view),
+                    add_to_cart=_i(ss_add_to_cart), comments=_i(ss_comments),
+                )
+        else:
+            # data file — parse xlsx/csv
+            suffix = os.path.splitext(file.filename)[1] or ".xlsx"
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                tmp.write(await file.read())
+                tmp_path = tmp.name
+            try:
+                if platform == "tiktok":
+                    records = parse_tiktok_export(tmp_path, entity_id, StreamType(stream_type))
+                else:
+                    records = parse_shopee_export(tmp_path, entity_id, StreamType(stream_type))
+                record = records[0] if records else None
+            except Exception as e:
+                return HTMLResponse(f"File parsing failed: {e}", status_code=400)
+            finally:
+                os.unlink(tmp_path)
 
     elif input_mode == "screenshot":
         if platform == "tiktok":
