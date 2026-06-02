@@ -52,7 +52,7 @@ Respond ONLY in this exact JSON:
 "whatsapp_summary":"Bahasa Indonesia, max 5 bullets"}}"""
 
     response = _client().messages.create(
-        model="claude-3-5-sonnet-20241022", max_tokens=2000,
+        model="claude-3-haiku-20240307", max_tokens=2000,
         system=SYSTEM, messages=[{"role":"user","content":prompt}]
     )
     raw = response.content[0].text.strip().replace("```json","").replace("```","").strip()
