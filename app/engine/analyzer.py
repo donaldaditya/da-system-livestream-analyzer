@@ -4,9 +4,9 @@ from app.models.stream import StandardStreamRecord, PerformanceScore, AnalysisRe
 def _client():
     return anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-SYSTEM = """You are a livestream commerce analyst for Emtek Commerce / Sinemart Digital,
-an MCN on TikTok Shop, Shopee, Tokopedia in Indonesia.
-Direct. No filler. Respond ONLY in the JSON schema. No markdown."""
+SYSTEM = """You are a livestream commerce analyst for an MCN operating on TikTok Shop and Shopee in Indonesia.
+Direct. No filler. ALL output must be in English only — no Bahasa Indonesia, no mixed language.
+Respond ONLY in the JSON schema provided. No markdown, no explanation outside the JSON."""
 
 def analyze_stream(record: StandardStreamRecord, scores: PerformanceScore,
                    entity: dict, history_avg: dict, user_notes: str = "") -> AnalysisResult:
@@ -49,7 +49,7 @@ Respond ONLY in this exact JSON:
 "metric_commentary":{{"revenue":"","traffic":"","engagement":"","conversion":"","audience_growth":"","product_mix":""}},
 "coaching_flags":[{{"metric":"","flag":"","fix":""}}],
 "analysis_quality_suggestions":["suggestion"],
-"whatsapp_summary":"Bahasa Indonesia, max 5 bullets"}}"""
+"whatsapp_summary":"English, max 5 bullets, plain text"}}"""
 
     response = _client().messages.create(
         model="claude-sonnet-4-6", max_tokens=2000,

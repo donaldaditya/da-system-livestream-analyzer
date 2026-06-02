@@ -43,8 +43,9 @@
 
     <!-- Structured form shown when image/pdf uploaded -->
     <div id="image-form-section" class="hidden mt-4">
-      <div class="flex items-center gap-2 mb-3">
-        <div class="text-xs text-gray-400 uppercase tracking-wider">Read metrics from your screenshot and enter below</div>
+      <div class="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-4">
+        <div class="text-xs font-medium text-blue-800 mb-1">Type the numbers from your screenshot into the fields below</div>
+        <div class="text-xs text-blue-600">Placeholders are examples only — they won't be submitted. Fill in your actual values.</div>
       </div>
       {% include "partials/_metrics_form.html" ignore missing %}
       <!-- TikTok fields -->
@@ -187,7 +188,8 @@
       placeholder="e.g. Host was new, focus was Turmeric SKU, peak at flash sale..."
       class="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:border-gray-400"></textarea>
   </div>
-  <button type="submit" class="w-full bg-gray-900 text-white text-sm py-2.5 rounded-lg hover:bg-gray-800">Analyze stream →</button>
+  <div id="validation-msg" class="hidden text-xs text-red-500 mb-2 text-center">Please fill in at least GMV before analyzing.</div>
+  <button type="submit" onclick="return validateForm()" class="w-full bg-gray-900 text-white text-sm py-2.5 rounded-lg hover:bg-gray-800">Analyze stream →</button>
 </form>
 
 <script>
@@ -234,6 +236,21 @@ function setMode(m) {
   document.getElementById('input_mode').value = m === 'manual' ? 'screenshot' : 'file';
 }
 
+function validateForm() {
+  const mode = document.getElementById('input_mode').value;
+  const subtype = document.getElementById('file_subtype').value;
+  const msg = document.getElementById('validation-msg');
+  // validate image upload or manual — check GMV field
+  if (mode === 'file' && subtype === 'image' || mode === 'screenshot') {
+    const gmv = document.querySelector('input[name="ss_gmv"]');
+    if (!gmv || !gmv.value.trim()) {
+      msg.classList.remove('hidden');
+      return false;
+    }
+  }
+  msg.classList.add('hidden');
+  return true;
+}
 function switchPlatform(p) {
   document.getElementById('platform_field').value = p;
   document.getElementById('fields-tiktok').classList.toggle('hidden', p !== 'tiktok');
