@@ -41,68 +41,9 @@
       <img id="img-preview" src="" class="w-full max-h-64 object-contain bg-gray-50">
     </div>
 
-    <!-- Structured form shown when image/pdf uploaded -->
-    <div id="image-form-section" class="hidden mt-4">
-      <div class="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-4">
-        <div class="text-xs font-medium text-blue-800 mb-1">Type the numbers from your screenshot into the fields below</div>
-        <div class="text-xs text-blue-600">Placeholders are examples only — they won't be submitted. Fill in your actual values.</div>
-      </div>
-      {% include "partials/_metrics_form.html" ignore missing %}
-      <!-- TikTok fields -->
-      <div id="img-fields-tiktok" class="{% if platform == 'shopee' %}hidden{% endif %}">
-        <div class="space-y-3">
-          {% for f,l,p,tip in [
-            ("ss_gmv",         "Attributed GMV (Rp)",       "3166320",  ""),
-            ("ss_items_sold",  "Items sold",                 "54",       ""),
-            ("ss_views",       "Views / Impressions",        "66530",    ""),
-            ("ss_peak_viewers","Peak viewers",               "39",       ""),
-            ("ss_duration",    "Duration (min)",             "97",       ""),
-            ("ss_show_gpm",    "Show GPM (Rp)",              "6670",     "GMV per 1,000 impressions"),
-            ("ss_avg_view",    "Avg viewing duration (s)",   "12",       ""),
-            ("ss_tap_through", "Tap-through rate (%)",       "2.64",     "e.g. 2.64 for 2.64%"),
-            ("ss_ctor",        "CTOR / Order rate (%)",      "0.33",     "e.g. 0.33 for 0.33%"),
-            ("ss_follow_rate", "Follow rate (%)",            "0.13",     "e.g. 0.13 for 0.13%"),
-            ("ss_new_followers","New followers",             "142",      ""),
-            ("ss_comments",    "Comments",                   "",         ""),
-            ("ss_likes",       "Likes",                      "",         ""),
-            ("ss_shares",      "Shares",                     "",         "")
-          ] %}
-          <div class="flex items-center gap-3">
-            <div class="w-48 flex-shrink-0">
-              <div class="text-xs text-gray-600">{{ l }}</div>
-              {% if tip %}<div class="text-xs text-gray-300">{{ tip }}</div>{% endif %}
-            </div>
-            <input type="text" name="{{ f }}" placeholder="{{ p }}"
-              class="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white">
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- Shopee fields -->
-      <div id="img-fields-shopee" class="{% if platform != 'shopee' %}hidden{% endif %}">
-        <div class="space-y-3">
-          {% for f,l,p,tip in [
-            ("ss_gmv",          "GMV / Sales (Rp)",          "5000000",  ""),
-            ("ss_orders",       "Orders confirmed",          "45",       ""),
-            ("ss_items_sold",   "Items sold",                "30",       ""),
-            ("ss_viewers_total","Total viewers",             "800",      ""),
-            ("ss_viewers_active","Active viewers",           "120",      ""),
-            ("ss_duration",     "Duration (min)",            "120",      ""),
-            ("ss_avg_view",     "Avg view duration (s)",     "55",       ""),
-            ("ss_add_to_cart",  "Add to cart",               "60",       ""),
-            ("ss_comments",     "Comments",                  "",         "")
-          ] %}
-          <div class="flex items-center gap-3">
-            <div class="w-48 flex-shrink-0">
-              <div class="text-xs text-gray-600">{{ l }}</div>
-              {% if tip %}<div class="text-xs text-gray-300">{{ tip }}</div>{% endif %}
-            </div>
-            <input type="text" name="{{ f }}" placeholder="{{ p }}"
-              class="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white">
-          </div>
-          {% endfor %}
-        </div>
-      </div>
+    <!-- Status shown after image upload -->
+    <div id="image-status" class="hidden mt-3 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+      <div class="text-xs font-medium text-blue-800">Screenshot ready — Claude Vision will extract metrics automatically on submit.</div>
     </div>
   </div>
 
@@ -205,12 +146,11 @@ function handleFileUpload(input) {
 
   if (DATA_EXTS.includes(ext)) {
     document.getElementById('file_subtype').value = 'data';
-    document.getElementById('image-form-section').classList.add('hidden');
     document.getElementById('img-preview-wrap').classList.add('hidden');
+    document.getElementById('image-status').classList.add('hidden');
   } else if (IMAGE_EXTS.includes(ext)) {
     document.getElementById('file_subtype').value = 'image';
-    document.getElementById('image-form-section').classList.remove('hidden');
-    // show preview for non-pdf
+    document.getElementById('image-status').classList.remove('hidden');
     if (ext !== 'pdf') {
       const reader = new FileReader();
       reader.onload = e => {
@@ -219,10 +159,6 @@ function handleFileUpload(input) {
       };
       reader.readAsDataURL(file);
     }
-    // show correct platform fields
-    const plat = document.getElementById('platform_field').value;
-    document.getElementById('img-fields-tiktok').classList.toggle('hidden', plat !== 'tiktok');
-    document.getElementById('img-fields-shopee').classList.toggle('hidden', plat !== 'shopee');
   }
 }
 

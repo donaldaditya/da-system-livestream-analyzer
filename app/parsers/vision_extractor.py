@@ -14,7 +14,7 @@ def extract_from_screenshot(image_bytes: bytes, media_type: str = "image/png") -
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
     response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
+        model="claude-sonnet-4-6",
         max_tokens=1000,
         messages=[{"role": "user", "content": [
             {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": b64}},

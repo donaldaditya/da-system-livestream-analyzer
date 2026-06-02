@@ -6,6 +6,7 @@ from datetime import datetime
 
 from app.parsers.tiktok_parser import parse_tiktok_export
 from app.parsers.shopee_parser import parse_shopee_export
+from app.parsers.vision_extractor import extract_from_screenshot
 from app.engine.normalizer import normalize
 from app.engine.scorer import score_stream
 from app.engine.analyzer import analyze_stream
@@ -89,30 +90,33 @@ async def analyze(
             entity["display_name"] = os.path.splitext(file.filename)[0]
 
         if file_subtype == "image":
-            # image/pdf uploaded — use ss_ form fields (user typed from screenshot)
+            # image/pdf — use Claude Vision to extract metrics
+            img_bytes = await file.read()
+            media_type = file.content_type or "image/png"
+            try:
+                extracted = extract_from_screenshot(img_bytes, media_type)
+            except Exception as e:
+                return HTMLResponse(f"Could not extract metrics from image: {e}", status_code=400)
             if platform == "tiktok":
                 record = StandardStreamRecord(
                     entity_id=entity_id, platform=Platform.tiktok,
                     stream_type=StreamType(stream_type),
-                    duration_minutes=_f(ss_duration),
-                    gmv_affiliate=_i(ss_gmv), items_sold=_i(ss_items_sold),
-                    views_total=_i(ss_views), viewers_peak=_i(ss_peak_viewers),
-                    show_gpm=_i(ss_show_gpm), avg_view_duration_s=_f(ss_avg_view),
-                    tap_through_rate=_f(ss_tap_through)/100 if _f(ss_tap_through)>1 else _f(ss_tap_through),
-                    ctor=_f(ss_ctor)/100 if _f(ss_ctor)>1 else _f(ss_ctor),
-                    follow_rate=_f(ss_follow_rate)/100 if _f(ss_follow_rate)>1 else _f(ss_follow_rate),
-                    new_followers=_i(ss_new_followers),
-                    comments=_i(ss_comments), likes=_i(ss_likes), shares=_i(ss_shares),
+                    stream_title=extracted.get("stream_title") or "",
+                    gmv_affiliate=extracted.get("gmv_total"),
+                    views_total=int(extracted.get("views") or 0) or None,
+                    avg_view_duration_s=extracted.get("avg_view_duration_s"),
+                    show_gpm=int(extracted.get("show_gpm") or 0) or None,
+                    tap_through_rate=extracted.get("tap_through_rate"),
+                    ctor=extracted.get("live_ctr"),
+                    follow_rate=extracted.get("follow_rate"),
                 )
             else:
                 record = StandardStreamRecord(
                     entity_id=entity_id, platform=Platform.shopee,
                     stream_type=StreamType(stream_type),
-                    duration_minutes=_f(ss_duration),
-                    gmv_confirmed=_i(ss_gmv), orders_confirmed=_i(ss_orders),
-                    items_sold=_i(ss_items_sold), viewers_total=_i(ss_viewers_total),
-                    viewers_active=_i(ss_viewers_active), avg_view_duration_s=_f(ss_avg_view),
-                    add_to_cart=_i(ss_add_to_cart), comments=_i(ss_comments),
+                    gmv_confirmed=extracted.get("gmv_total"),
+                    viewers_total=int(extracted.get("views") or 0) or None,
+                    avg_view_duration_s=extracted.get("avg_view_duration_s"),
                 )
         else:
             # data file — parse xlsx/csv
