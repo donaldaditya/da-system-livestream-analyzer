@@ -173,18 +173,6 @@ function setMode(m) {
 }
 
 function validateForm() {
-  const mode = document.getElementById('input_mode').value;
-  const subtype = document.getElementById('file_subtype').value;
-  const msg = document.getElementById('validation-msg');
-  // validate image upload or manual — check GMV field
-  if (mode === 'file' && subtype === 'image' || mode === 'screenshot') {
-    const gmv = document.querySelector('input[name="ss_gmv"]');
-    if (!gmv || !gmv.value.trim()) {
-      msg.classList.remove('hidden');
-      return false;
-    }
-  }
-  msg.classList.add('hidden');
   return true;
 }
 function switchPlatform(p) {

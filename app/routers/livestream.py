@@ -97,26 +97,35 @@ async def analyze(
                 extracted = extract_from_screenshot(img_bytes, media_type)
             except Exception as e:
                 return HTMLResponse(f"Could not extract metrics from image: {e}", status_code=400)
+
+            def _ev(key, cast=float):
+                v = extracted.get(key)
+                if v is None: return None
+                try: return cast(v)
+                except: return None
+
             if platform == "tiktok":
                 record = StandardStreamRecord(
                     entity_id=entity_id, platform=Platform.tiktok,
                     stream_type=StreamType(stream_type),
                     stream_title=extracted.get("stream_title") or "",
-                    gmv_affiliate=extracted.get("gmv_total"),
-                    views_total=int(extracted.get("views") or 0) or None,
-                    avg_view_duration_s=extracted.get("avg_view_duration_s"),
-                    show_gpm=int(extracted.get("show_gpm") or 0) or None,
-                    tap_through_rate=extracted.get("tap_through_rate"),
-                    ctor=extracted.get("live_ctr"),
-                    follow_rate=extracted.get("follow_rate"),
+                    gmv_affiliate=_ev("gmv_total", int),
+                    items_sold=_ev("items_sold", int),
+                    views_total=_ev("views", int),
+                    viewers_peak=_ev("impressions", int),
+                    show_gpm=_ev("show_gpm", int),
+                    avg_view_duration_s=_ev("avg_view_duration_s"),
+                    tap_through_rate=_ev("tap_through_rate"),
+                    ctor=_ev("live_ctr"),
+                    follow_rate=_ev("follow_rate"),
                 )
             else:
                 record = StandardStreamRecord(
                     entity_id=entity_id, platform=Platform.shopee,
                     stream_type=StreamType(stream_type),
-                    gmv_confirmed=extracted.get("gmv_total"),
-                    viewers_total=int(extracted.get("views") or 0) or None,
-                    avg_view_duration_s=extracted.get("avg_view_duration_s"),
+                    gmv_confirmed=_ev("gmv_total", int),
+                    viewers_total=_ev("views", int),
+                    avg_view_duration_s=_ev("avg_view_duration_s"),
                 )
         else:
             # data file — parse xlsx/csv
